@@ -3,7 +3,7 @@ name: Release
 on:
   push:
     tags:
-      - 'v*'   # все теги вида v1.0, v2.0 и т.д.
+      - 'v*'
 
 jobs:
   release:
@@ -11,7 +11,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Setup CMake
         uses: jwlawson/actions-setup-cmake@v1
@@ -25,16 +25,17 @@ jobs:
         run: cmake --build build --config Release
 
       - name: Create GitHub Release
+        id: create_release                # ← ЭТО ГЛАВНОЕ
         uses: softprops/action-gh-release@v1
         with:
           tag_name: ${{ github.ref_name }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Upload binaries
+      - name: Upload binary
         uses: actions/upload-release-asset@v1
         with:
-          upload_url: ${{ steps.release.outputs.upload_url }}
+          upload_url: ${{ steps.create_release.outputs.upload_url }}   # ← СЮДА
           asset_path: build/Release/helloworld.exe
           asset_name: helloworld.exe
           asset_content_type: application/octet-stream
